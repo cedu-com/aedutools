@@ -1,0 +1,31 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion project.compileSdkVersion as int
+
+    defaultConfig {
+        applicationId "net.chinaedu.aedu.tools.sample"
+        minSdkVersion project.minSdkVersion
+        targetSdkVersion project.targetSdkVersion
+        versionCode project.apiVersionCode as int
+        versionName project.apiVersionName
+
+        flavorDimensions "default"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "com.android.support:appcompat-v7:${project.supportVersion}"
+    implementation project(':tools')
+    implementation project(':tools-annotations')
+    annotationProcessor project(':tools-compiler')
+//    compile "com.deparse.dpframe.tools:DPTools:${project.apiVersionName}"
+//    annotationProcessor "com.deparse.dpframe.tools:DPTools-compiler:${project.apiVersionName}"
+}

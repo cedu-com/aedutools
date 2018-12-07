@@ -1,0 +1,117 @@
+group = project.group
+version = project.apiVersionName
+
+def pom_group = project.group
+def pom_version = project.apiVersionName
+def pom_description = project.description
+def pom_license_name = "The Apache Software License, Version 2.0"
+def pom_license_url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+def pom_deveoper_id = project.deveoper_id
+def pom_deveoper_name = project.deveoper_name
+def pom_deveoper_mail = project.deveoper_mail
+def pom_packaging = (project.getPlugins().hasPlugin('com.android.application') || project.getPlugins().hasPlugin('com.android.library')) ? "aar" : "jar"
+
+// 根节点添加
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            group pom_group
+            version pom_version
+            project {
+                packaging pom_packaging
+                name project.name
+                url siteUrl
+                description pom_description
+                licenses {
+                    license {
+                        name pom_license_name
+                        url pom_license_url
+                    }
+                }
+                developers {
+                    developer {
+                        id pom_deveoper_id
+                        name pom_deveoper_name
+                        email pom_deveoper_mail
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+if (project.getPlugins().hasPlugin('com.android.application') ||
+        project.getPlugins().hasPlugin('com.android.library')) {
+    task sourcesJar(type: Jar) {
+        from android.sourceSets.main.java.srcDirs
+        classifier = 'sources'
+    }
+
+    task javadoc(type: Javadoc) {
+        source = android.sourceSets.main.java.srcDirs
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+} else {
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+}
+
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+    }
+}
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+//添加UTF-8编码否则注释可能JAVADOC文档可能生成不了
+javadoc {
+    options {
+        encoding "UTF-8"
+        charSet 'UTF-8'
+        author true
+        version true
+        links "http://docs.oracle.com/javase/7/docs/api"
+        title project.name + "-JavaDoc"
+    }
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    configurations = ['archives']
+    publish = true
+    pkg {
+        repo = project.repo
+        name = project.name                // project name in jcenter
+        websiteUrl = project.siteUrl
+        vcsUrl = project.gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+        desc = pom_description;
+//        githubRepo = gitUrl;
+//        githubReleaseNotesFile = 'https://raw.githubusercontent.com/deparse/dpbinder/master/README.md'
+    }
+}

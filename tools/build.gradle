@@ -1,0 +1,29 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+android {
+    compileSdkVersion project.compileSdkVersion as int
+
+    defaultConfig {
+        minSdkVersion project.minSdkVersion
+        targetSdkVersion project.targetSdkVersion
+        versionCode project.apiVersionCode as int
+        versionName project.apiVersionName
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile "com.android.support:appcompat-v7:${project.supportVersion}"
+    compile "com.android.support:recyclerview-v7:${project.supportVersion}"
+    compile project(':tools-annotations')
+}
+
+apply from: rootProject.file('gradle-mvn-push.gradle')
